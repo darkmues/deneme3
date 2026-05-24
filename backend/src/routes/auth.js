@@ -71,7 +71,7 @@ router.post(
     // Generate tokens
     const tokens = generateTokens(user.id);
 
-    // Store refresh token
+    // Store refresh token (consistent with login)
     const tokenHash = await bcrypt.hash(tokens.refreshToken, 8);
     await query(
       `INSERT INTO refresh_tokens (user_id, token_hash, device_info, ip_address, expires_at)

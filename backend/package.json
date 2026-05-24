@@ -9,7 +9,7 @@
     "start": "node src/server.js",
     "migrate": "node src/utils/migrate.js",
     "seed": "node src/utils/seed.js",
-    "test": "node --test src/**/*.test.js"
+    "test": "node --test src/tests/*.test.js"
   },
   "dependencies": {
     "express": "^4.18.2",
