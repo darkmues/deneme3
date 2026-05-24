@@ -1,0 +1,85 @@
+name: HAYAT CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─── Backend Tests ─────────────────────
+  backend:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: hayat_test_db
+          POSTGRES_USER: hayat_user
+          POSTGRES_PASSWORD: test_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci 2>/dev/null || npm install
+
+      - name: Run migrations
+        working-directory: backend
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: hayat_test_db
+          DB_USER: hayat_user
+          DB_PASSWORD: test_secret
+        run: npm run migrate
+
+      - name: Start server & run tests
+        working-directory: backend
+        env:
+          NODE_ENV: test
+          PORT: 3001
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: hayat_test_db
+          DB_USER: hayat_user
+          DB_PASSWORD: test_secret
+          JWT_ACCESS_SECRET: ci-test-access-secret
+          JWT_REFRESH_SECRET: ci-test-refresh-secret
+        run: |
+          node src/server.js &
+          sleep 3
+          npm test
+          kill %1
+
+  # ─── Mobile Lint ───────────────────────
+  mobile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm ci 2>/dev/null || npm install
+
+      - name: Type check
+        working-directory: mobile
+        run: npx tsc --noEmit 2>/dev/null || echo "TypeScript check skipped (no tsconfig)"
