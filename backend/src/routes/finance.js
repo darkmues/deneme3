@@ -216,7 +216,13 @@ router.get(
                 (SELECT SUM(t.amount) FROM transactions t
                  WHERE t.user_id = $1 AND t.type = 'expense' AND t.deleted_at IS NULL
                    AND t.category_id = b.category_id
-                   AND DATE_TRUNC(b.period, t.date) = DATE_TRUNC(b.period, CURRENT_DATE)),
+                   AND DATE_TRUNC(
+                         CASE b.period WHEN 'weekly' THEN 'week' WHEN 'yearly' THEN 'year' ELSE 'month' END,
+                         t.date
+                       ) = DATE_TRUNC(
+                         CASE b.period WHEN 'weekly' THEN 'week' WHEN 'yearly' THEN 'year' ELSE 'month' END,
+                         CURRENT_DATE
+                       )),
                 0
               ) AS spent
        FROM budgets b

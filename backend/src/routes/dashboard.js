@@ -53,22 +53,22 @@ router.get(
 
       // Budget alerts
       getMany(
-        `SELECT b.name, b.amount,
-                COALESCE(
-                  (SELECT SUM(t.amount) FROM transactions t
-                   WHERE t.user_id = $1 AND t.type = 'expense' AND t.deleted_at IS NULL
-                     AND t.category_id = b.category_id
-                     AND DATE_TRUNC(b.period, t.date) = DATE_TRUNC(b.period, CURRENT_DATE)),
-                  0
-                ) AS spent
-         FROM budgets b WHERE b.user_id = $1 AND b.is_active = TRUE
-         HAVING COALESCE(
-           (SELECT SUM(t.amount) FROM transactions t
-            WHERE t.user_id = $1 AND t.type = 'expense' AND t.deleted_at IS NULL
-              AND t.category_id = b.category_id
-              AND DATE_TRUNC(b.period, t.date) = DATE_TRUNC(b.period, CURRENT_DATE)),
-           0
-         ) >= b.amount * b.alert_threshold`,
+        `SELECT b.name, b.amount, COALESCE(s.spent, 0) AS spent
+         FROM budgets b
+         LEFT JOIN LATERAL (
+           SELECT SUM(t.amount) AS spent FROM transactions t
+           WHERE t.user_id = b.user_id AND t.type = 'expense' AND t.deleted_at IS NULL
+             AND t.category_id = b.category_id
+             AND DATE_TRUNC(
+                   CASE b.period WHEN 'weekly' THEN 'week' WHEN 'yearly' THEN 'year' ELSE 'month' END,
+                   t.date
+                 ) = DATE_TRUNC(
+                   CASE b.period WHEN 'weekly' THEN 'week' WHEN 'yearly' THEN 'year' ELSE 'month' END,
+                   CURRENT_DATE
+                 )
+         ) s ON TRUE
+         WHERE b.user_id = $1 AND b.is_active = TRUE
+           AND COALESCE(s.spent, 0) >= b.amount * b.alert_threshold`,
         [req.userId]
       ),
 
