@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "HAYAT",
+    "slug": "hayat-life-os",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "hayat",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0A0F"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hayat.lifeos",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Güvenli giriş için Face ID kullanılır"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A0A0F"
+      },
+      "package": "com.hayat.lifeos",
+      "versionCode": 1,
+      "permissions": ["NOTIFICATIONS", "VIBRATE"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-notifications",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        { "backgroundColor": "#0A0A0F" }
+      ]
+    ],
+    "extra": {
+      "eas": { "projectId": "your-project-id" }
+    }
+  }
+}
